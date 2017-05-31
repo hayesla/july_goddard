@@ -1,7 +1,7 @@
 import numpy as np
 from timeseries_simulation import TimeSeriesFromModelSpectrum
 from rnspectralmodels4 import power_law
-
+import matplotlib.pyplot as plt
 
 class SimulatedFlare:
     def __init__(self, background, white_noise, red_noise, periodic_signal, n, dt):

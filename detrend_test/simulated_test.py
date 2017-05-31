@@ -60,12 +60,11 @@ amp = np.logspace(3, 0.1, len(x))
 amp = gaussian(x, 2000, 800) + 1
 sin_com = []
 for i in range(len(freq)):
-    sin_com.append(amp[i]*np.sin(2*np.pi*freq[i]*x_ar[i]))
+    sin_com.append(amp[i]*np.sin(2*np.pi*freq[i]*x[i]))
 sin_com = np.array(sin_com)/1000
 
 ts = SimulatedFlare(flare_background, white_noise, red_noise, sin_com, n, dt).flare()
 
 from wavelet_test import wave_fn
-wave_fn(a, 1, cmapp = 'viridis')
 
 
