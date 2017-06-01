@@ -10,6 +10,7 @@ sns.set_style('ticks',{'xtick.direction':'in','ytick.direction':'in'})
 sns.set_context('paper', font_scale = 1.5)
 import matplotlib.dates as dates
 from copy import deepcopy
+import astropy.units as u
 
 file_dir  = '/Users/laura/Documents/QPPs/July_event/july19/all_aia_fits_24s/*131_.fts'
 #rhessi_centroids = '/Users/laura/Documents/QPPs/July_event/july_goddard/96_fwd_fit.csv'
@@ -24,12 +25,12 @@ file_dir  = '/Users/laura/Documents/QPPs/July_event/july19/all_aia_fits_24s/*131
 all_maps = map.Map(file_dir)
 
 
-def aia_lightcurve():
+def aia_lightcurve(map_list):
     aia_data = []
     aia_times = []
-    for i in range(len(all_maps)):
-        aia_data.append(np.sum(all_maps[i].data))
-        aia_times.append(all_maps[i].date)
+    for i in range(len(map_list)):
+        aia_data.append(np.sum(map_list[i].data))
+        aia_times.append(map_list[i].date)
     aia_lc = Series(aia_data, index = aia_times)
     return aia_lc
 
@@ -158,3 +159,15 @@ def plot_sat():
 
         plt.clf()
 
+
+def make_subplots():
+    new_aia = all_maps[320:412]
+    lengthx = 116 * u.arcsec
+    lengthy = 82 * u.arcsec
+    x0 = 1016 * u.arcsec
+    y0 = -235 * u.arcsec
+    new_subs = []
+    for i in range(len(new_aia)):
+        ssub = submap = new_aia[i].submap(u.Quantity([x0 - lengthx, x0 + lengthx]),
+           u.Quantity([y0 - lengthy, y0 + lengthy]))
+        new_subs.append(ssub)
