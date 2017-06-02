@@ -6,7 +6,7 @@ from pandas import Series
 import scipy
 smooth = scipy.ndimage.filters.uniform_filter
 from scipy.signal import savgol_filter
-
+from matplotlib.dates import DateFormatter
 
 def normalise(x):
     return (x-x.min())/(x.max() - x.min())
@@ -17,7 +17,7 @@ def fourier_ana(x, dt):
     df = 1./(N*dt)
     PSD = abs(dt*fftpack.fft(x)[:N/2])**2
     f = df*np.arange(N/2)
-    plt.plot(1./f, PSD)
+    plt.plot(f, PSD)
     return f, PSD
 
 def fourier_ana_np(x, dt):
@@ -27,7 +27,7 @@ def fourier_ana_np(x, dt):
     P = np.absolute(np.fft.fft(x))**2
     freq = f[fp]
     PSD = P[fp]
-    plt.plot(1./freq, PSD)
+    plt.plot(freq, PSD)
     return freq, PSD
 
 date = '2012-07-19'
@@ -67,14 +67,16 @@ class PeriodTest:
             plt.xlabel('Frequency (s)')
             plt.ylabel('PSD')
         else:
-            plt.subplot(2,1,1)
-            plt.plot(self.timeseries)
-            plt.grid()
-            plt.subplot(2,1,2)
-            plt.plot(1./self.pos_freqs, self.PSD_pos/np.max(self.PSD_pos))
-            plt.xlabel('Frequency (s)')
-            plt.ylabel('PSD')
-            plt.grid()
+            fig, ax = plt.subplots(2)
+            ax[0].plot(self.timeseries/np.max(self.timeseries))
+            ax[0].grid()
+            date_format = DateFormatter('%H:%M:%S')
+            ax[0].xaxis.set_major_formatter(date_format)
+          
+            ax[1].plot(1./self.pos_freqs, self.PSD_pos/np.max(self.PSD_pos))
+            ax[1].set_xlabel('Period (s)')
+            ax[1].set_ylabel('PSD')
+            ax[1].grid()
 
 
 
