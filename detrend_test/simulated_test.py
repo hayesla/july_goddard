@@ -50,20 +50,25 @@ white_noise = np.random.normal(0, 0.0001, n)
 
 #red noise
 r_n = TimeSeriesFromModelSpectrum(power_law, [1, 2], n, dt, 1, 1)
-red_noise = np.real(r_n.sample())
+red_noise = np.real(r_n.sample())/10
 
 #increaing period sin wave
 period = np.linspace(10, 50, len(x))
 freq = 1./period
-amp = np.linspace(1, 0.3, len(x))
-amp = np.logspace(3, 0.1, len(x))
-amp = gaussian(x, 2000, 800) + 1
+#freq = 1./10
+amp = np.linspace(0.001, 0.0001, len(x))
+#amp = np.logspace(0.001, 0.0005, len(x))
+#amp = gaussian(x, 2000, 800) + 1
 sin_com = []
-for i in range(len(freq)):
+for i in range(len(x)):
     sin_com.append(amp[i]*np.sin(2*np.pi*freq[i]*x[i]))
-sin_com = np.array(sin_com)/1000
+sin_com = np.array(sin_com)
 
-ts = SimulatedFlare(flare_background, white_noise, red_noise, sin_com, n, dt).flare()
+
+background1 = np.zeros(len(x))
+ts = SimulatedFlare(flare_background, white_noise, red_noise, sin_com, n, dt)
+
+ts1 = SimulatedFlare(background1, white_noise, red_noise, sin_com, n, dt)
 
 from wavelet_test import wave_fn
 

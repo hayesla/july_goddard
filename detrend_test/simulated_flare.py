@@ -29,9 +29,19 @@ class SimulatedFlare:
         self.n = n
 
         self.dt = dt
+        
+        self.flare = self.background + self.white_noise + self.red_noise + self.periodic_signal
+    
+        self.freq = np.fft.fftfreq(self.n, self.dt)
+        
+        self.pos_freqs = self.freq[self.freq > 0]
+        
+        self.PSD = np.absolute(np.fft.fft(self.flare))**2
+        
+        self.PSD_pos = self.PSD[self.freq>0]
 
-    def flare(self):
-        return self.background + self.white_noise + self.red_noise + self.periodic_signal
+
+
 
 
     def plot_flare(self):
