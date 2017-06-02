@@ -124,8 +124,8 @@ def save_plot_together():
 
 
 
-def calc_saturated_lightcurve():
-    new_aia = all_maps[320:412]
+def calc_saturated_lightcurve(new_aia):
+    #new_aia = all_maps[320:412]
     sat_lc = []
     new_lc = []
     na_lc = []
@@ -171,3 +171,4 @@ def make_subplots():
         ssub = submap = new_aia[i].submap(u.Quantity([x0 - lengthx, x0 + lengthx]),
            u.Quantity([y0 - lengthy, y0 + lengthy]))
         new_subs.append(ssub)
+
