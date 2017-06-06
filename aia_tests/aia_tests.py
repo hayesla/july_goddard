@@ -162,6 +162,7 @@ def plot_sat():
 
 def make_subplots():
     new_aia = all_maps[320:412]
+    #new_aia = all_maps
     lengthx = 116 * u.arcsec
     lengthy = 82 * u.arcsec
     x0 = 1016 * u.arcsec
@@ -172,3 +173,87 @@ def make_subplots():
            u.Quantity([y0 - lengthy, y0 + lengthy]))
         new_subs.append(ssub)
 
+
+def fourier_ana(x):
+    N = len(x)
+    dt = 24.0
+    df = 1./(N*dt)
+    PSD = abs(dt*fftpack.fft(x)[:N/2])**2
+    f = df*np.arange(N/2)
+    #plt.plot(1./f, PSD/np.max(PSD))
+    return f, PSD
+
+from scipy import fftpack
+def make_freq_map(map_list):
+    freq_map = deepcopy(map_list[0])
+    full_list = []
+    for i in range(len(map_list[0].data[0])):
+        for j in range(len(map_list[0].data[:,0])):
+            temp_lc = []
+            for k in range(len(map_list)):
+                temp_lc.append(map_list[k].data[j][i])
+        
+        
+            full_list.append(temp_lc)
+        
+            temp_test = temp_lc - savgol_filter(temp_lc, 13, 3)
+            temp_test = smooth(temp_test,3)
+            f, psd = fourier_ana(temp_test)
+            p_val = 1./f[np.where(psd == np.max(psd))[0][0]]
+            freq_map.data[j][i] = p_val
+
+    return freq_map, full_list
+
+def lala():
+    test = np.arange(0, 274*386, 386)
+    
+    for i in range(len(test)):
+        if test[i] != test[len(test)-1]:
+            testy.append(full_list[test[i]:test[i+1]])
+
+
+def chippy_choppy():
+    
+    #coords found from ginput
+    coords = [(48.510204081632622, 78.357606679035257),
+    (68.844155844155807, 72.638682745825605),
+    (89.813543599257855, 76.451298701298697),
+    (115.86641929499069, 82.170222634508349),
+    (141.91929499072353, 94.243506493506487),
+    (162.25324675324674, 107.58766233766232),
+    (173.69109461966602, 127.92161410018551),
+    (174.96196660482374, 150.16187384044525),
+    (163.52411873840444, 172.40213358070497),
+    (142.55473098330239, 190.82977736549162),
+    (117.13729128014839, 200.99675324675323),
+    (89.178107606679021, 204.17393320964746),
+    (68.844155844155807, 207.98654916512055)]
+
+    #make into array for indexing
+    coord_array = np.array(coords, dtype = 'int')
+
+    xx = np.linspace(new_subs[0].xrange[0], new_subs[0].xrange[1], 386)[coord_array[:,0]]
+    yy = np.linspace(new_subs[0].yrange[0], new_subs[0].yrange[1], 274)[coord_array[:,1]]
+    
+    
+    lc_list = []
+    for k in range(len(xx)):
+        
+        subys = []
+        for i in range(len(new_subs)):
+            x0 = xx[k]
+            y0 = yy[k]
+            length = 5*u.arcsec
+            subb = new_subs[i].submap(u.Quantity([x0 - length, x0 + length]), u.Quantity([y0 - length, y0 + length]))
+            subys.append(subb)
+
+        lc_list.append(aia_lightcurve(subys))
+    
+    plot_boxes = False
+    if plot_boxes:
+        new_subs[0].plot()
+        for i in range(len(xx)):
+            length = 5*u.arcsec
+            length2 = length*2
+            bottom_left = u.Quantity([xx[i] - length, yy[i] - length])
+            new_subs[0].draw_rectangle(bottom_left, length2, length2, linewidth = 1, color = 'k')
