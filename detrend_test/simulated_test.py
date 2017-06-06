@@ -18,6 +18,11 @@ from simulated_flare import SimulatedFlare
 from scipy.signal import chirp
 
 
+import seaborn as sns
+sns.set_style('ticks',{'xtick.direction':'in','ytick.direction':'in'})
+sns.set_context('paper', font_scale = 1.5)
+
+
 def gaussian(x, mu, sig):
     return np.exp(-np.power(x - mu, 2.) / (2 * np.power(sig, 2.)))
 
@@ -57,6 +62,8 @@ period = np.linspace(10, 50, len(x))
 freq = 1./period
 #freq = 1./10
 amp = np.linspace(0.001, 0.0001, len(x))
+yy = test_lc - smooth(test_lc, 70)
+amp = smooth(np.abs(yy), 70)
 #amp = np.logspace(0.001, 0.0005, len(x))
 #amp = gaussian(x, 2000, 800) + 1
 sin_com = []
@@ -71,5 +78,108 @@ ts = SimulatedFlare(flare_background, white_noise, red_noise, sin_com, n, dt)
 ts1 = SimulatedFlare(background1, white_noise, red_noise, sin_com, n, dt)
 
 from wavelet_test import wave_fn
+
+
+def fourier_ana(x):
+    N = len(x)
+    dt = 2.0
+    df = 1./(N*dt)
+    PSD = abs(dt*fftpack.fft(x)[:N/2])**2
+    f = df*np.arange(N/2)
+    fp = f > 1./1000 #only want periods < 1000
+    f = f[fp]
+    PSD = PSD[fp]
+    #plt.plot(1./f, PSD/np.max(PSD))
+    return f, PSD
+
+
+
+save_dir = '/Users/laura/Documents/QPPs/July_event/july_goddard/detrend_test/smooth_lcs'
+def simulated_data_check():
+    smooth_factor = np.arange(11, 301, 6)
+    smooth_factor_sg = np.arange(11, 301, 6)
+    a, b = fourier_ana(sin_com)
+    data_cube = []
+    data_cube2 = []
+    for i in range(len(smooth_factor)):
+        data_cube.append(ts.flare - savgol_filter(ts.flare, smooth_factor[i], 3))
+        data_cube2.append(ts.flare - smooth(ts.flare, smooth_factor[i]))
+    for i in range(len(data_cube)):
+        f, PSD = fourier_ana(data_cube[i])
+        f1, PSD1 = fourier_ana(data_cube2[i])
+        fig, ax = plt.subplots(3, figsize = (7,8) )
+        ax[0].plot(data_cube[i]/np.max(data_cube[i]), label = 'Savgol window = ' + str(smooth_factor[i]) + ' s', color = 'g')
+        
+        ax[0].grid()
+        ax[0].legend()
+        ax[0].set_ylabel('Detrended Flux')
+        
+        ax[1].plot(data_cube2[i]/np.max(data_cube2[i]), label = 'Smooth window = '+str(smooth_factor[i]), color = 'r')
+        ax[1].grid()
+        ax[1].legend()
+        ax[1].set_ylabel('Detrended Flux')
+        
+        ax[2].plot(1./f, PSD,label = 'FT', color = 'g')
+        ax[2].plot(1./f1, PSD1,label = 'FT', color = 'r')
+        ax[2].plot(1./a, b, label = 'Actual Period', color = 'k')
+        ax[2].set_xlabel('Period (s)')
+        ax[2].set_ylabel('Normalised PSD')
+        ax[2].legend()
+        ax[2].grid()
+        plt.tight_layout()
+        if i < 10:
+            plt.savefig(save_dir +'/simulated_lc_00' + str(i) + '.png')
+        else:
+            plt.savefig(save_dir +'/simulated_lc_0' + str(i) + '.png')
+        plt.clf()
+
+
+
+
+
+
+
+save_dir = '/Users/laura/Documents/QPPs/July_event/july_goddard/detrend_test/smooth_lcs'
+def real_data_check():
+    smooth_factor = np.arange(11, 301, 6)
+    smooth_factor_sg = np.arange(11, 301, 6)
+    a, b = fourier_ana(sin_com)
+    data_cube = []
+    data_cube2 = []
+    for i in range(len(smooth_factor)):
+        data_cube.append(test_lc - savgol_filter(test_lc, smooth_factor[i]*2+1, 4))
+        data_cube2.append(test_lc - smooth(test_lc, smooth_factor[i]))
+    for i in range(len(data_cube)):
+        f, PSD = fourier_ana(data_cube[i])
+        f1, PSD1 = fourier_ana(data_cube2[i])
+        fig, ax = plt.subplots(3, figsize = (7,8) )
+        ax[0].plot(data_cube[i]/np.max(data_cube[i]), label = 'Savgol window = ' + str(smooth_factor[i]*2+1) + ' s', color = 'g')
+
+        ax[0].grid()
+        ax[0].legend()
+        ax[0].set_ylabel('Detrended Flux')
+
+        ax[1].plot(data_cube2[i]/np.max(data_cube2[i]), label = 'Smooth window = '+str(smooth_factor[i]), color = 'r')
+        ax[1].grid()
+        ax[1].legend()
+        ax[1].set_ylabel('Detrended Flux')
+
+        ax[2].plot(1./f, PSD/np.max(PSD),label = 'FT', color = 'g')
+        ax[2].plot(1./f1, PSD1/np.max(PSD1),label = 'FT', color = 'r')
+        
+        ax[2].set_xlabel('Period (s)')
+        ax[2].set_ylabel('Normalised PSD')
+        ax[2].grid()
+        plt.tight_layout()
+        if i < 10:
+            plt.savefig(save_dir +'/both_lc_00' + str(i) + '.png')
+        else:
+            plt.savefig(save_dir +'/both_lc_0' + str(i) + '.png')
+        plt.clf()
+
+
+
+
+
 
 
