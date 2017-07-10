@@ -173,10 +173,26 @@ def make_subplots():
            u.Quantity([y0 - lengthy, y0 + lengthy]))
         new_subs.append(ssub)
 
+'''
+def make_subplots(new_aia):
+    #new_aia = all_maps[320:412]
+    #new_aia = all_maps
+    lengthx = 128 * u.arcsec
+    lengthy = 128 * u.arcsec
+    x0 = -855 * u.arcsec
+    y0 = 192 * u.arcsec
+    new_subs = []
+    for i in range(len(new_aia)):
+        ssub = submap = new_aia[i].submap(u.Quantity([x0 - lengthx, x0 + lengthx]),
+                                          u.Quantity([y0 - lengthy, y0 + lengthy]))
+        new_subs.append(ssub)
+    return new_subs
 
-def fourier_ana(x):
+
+'''
+def fourier_ana(x, dt):
     N = len(x)
-    dt = 24.0
+    dt = dt
     df = 1./(N*dt)
     PSD = abs(dt*fftpack.fft(x)[:N/2])**2
     f = df*np.arange(N/2)
@@ -198,7 +214,9 @@ def make_freq_map(map_list):
         
             temp_test = temp_lc - savgol_filter(temp_lc, 13, 3)
             temp_test = smooth(temp_test,3)
-            f, psd = fourier_ana(temp_test)
+            f, psd = fourier_ana(temp_test, 24)
+            fp = f < 0.01
+            psd = psd[fp]
             p_val = 1./f[np.where(psd == np.max(psd))[0][0]]
             freq_map.data[j][i] = p_val
 
@@ -229,31 +247,81 @@ def chippy_choppy():
     (89.178107606679021, 204.17393320964746),
     (68.844155844155807, 207.98654916512055)]
 
+
+    #top of loop
+    coord2 = [(133.73011363636365, 141.36505681818181),
+    (154.16335227272728, 145.25710227272731),
+    (177.515625, 145.25710227272731),
+    (191.13778409090909, 142.33806818181819),
+    (213.51704545454544, 137.47301136363637),
+    (233.95028409090912, 134.55397727272731),
+    (252.4375, 131.63494318181819),
+    (275.78977272727275, 127.74289772727273),
+    (300.11505681818181, 127.74289772727273),
+    (325.41335227272731, 119.95880681818183)]
+
     #make into array for indexing
     coord_array = np.array(coords, dtype = 'int')
-
+    coord_array2 = np.array(coord2, dtype = 'int')
+    
+    
     xx = np.linspace(new_subs[0].xrange[0], new_subs[0].xrange[1], 386)[coord_array[:,0]]
     yy = np.linspace(new_subs[0].yrange[0], new_subs[0].yrange[1], 274)[coord_array[:,1]]
     
     
-    lc_list = []
+    xx2 = np.linspace(new_subs[0].xrange[0], new_subs[0].xrange[1], 386)[coord_array2[:,0]]
+    yy2 = np.linspace(new_subs[0].yrange[0], new_subs[0].yrange[1], 274)[coord_array2[:,1]]
+    
+    lc_loop_list = []
     for k in range(len(xx)):
         
         subys = []
         for i in range(len(new_subs)):
             x0 = xx[k]
             y0 = yy[k]
-            length = 5*u.arcsec
+            length = 10*u.arcsec
             subb = new_subs[i].submap(u.Quantity([x0 - length, x0 + length]), u.Quantity([y0 - length, y0 + length]))
             subys.append(subb)
 
-        lc_list.append(aia_lightcurve(subys))
-    
+        lc_loop_list.append(aia_lightcurve(subys))
+
+    lc_line_list = []
+    for k in range(len(xx2)):
+        sub2 = []
+        for j in range(len(new_subs)):
+        
+            x0 = xx2[k]
+            y0 = yy2[k]
+            length = 10*u.arcsec
+            subb = new_subs[j].submap(u.Quantity([x0 - length, x0 + length]), u.Quantity([y0 - length, y0 + length]))
+            sub2.append(subb)
+
+        lc_line_list.append(aia_lightcurve(sub2))
+
+
+
+
+
     plot_boxes = False
     if plot_boxes:
         new_subs[0].plot()
         for i in range(len(xx)):
-            length = 5*u.arcsec
+            length = 10*u.arcsec
             length2 = length*2
             bottom_left = u.Quantity([xx[i] - length, yy[i] - length])
             new_subs[0].draw_rectangle(bottom_left, length2, length2, linewidth = 1, color = 'k')
+
+        for i in range(len(xx2)):
+            length = 10*u.arcsec
+            length2 = 2*length
+            bottom_left2 = u.Quantity([xx2[i] - length, yy2[i] - length])
+            new_subs[0].draw_rectangle(bottom_left2, length2, length2, linewidth = 1, color = 'r')
+
+
+
+
+
+
+
+
+
