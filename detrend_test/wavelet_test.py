@@ -138,7 +138,8 @@ def wave_fn(sst, dt, title = 'test', cmapp = 'Greys'):
     #plt.hold(False)
     # format y-scale
     #plt3.set_yscale('log', basey=2, subsy=None)
-    plt.ylim(np.min(period), period[len(period)-2])
+    #plt.ylim(np.min(period), period[len(period)-2])
+    plt.ylim(0,80)
     ax = plt.gca().yaxis
     ax.set_major_formatter(matplotlib.ticker.ScalarFormatter())
     plt3.ticklabel_format(axis='y', style='plain')
